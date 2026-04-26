@@ -5,10 +5,10 @@ Uses FFT (Fast Fourier Transform) to identify which piano key was pressed
 from a live microphone recording
 
 Installations:
-    numpy scipy sounddevice matplotlib
+    pip install numpy scipy sounddevice matplotlib
 
 Usage:
-    python piano_key_identifier.py                  # live mic recording
+    python musicnoteidentifier.py                  # live mic recording
     python piano_key_identifier.py --duration 3     # record for 3 seconds
     python piano_key_identifier.py --list-devices   # show audio input devices
 """
