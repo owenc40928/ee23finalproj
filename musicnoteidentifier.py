@@ -78,31 +78,27 @@ def compute_fft(signal: np.ndarray, sample_rate: int):
 def find_fundamental(freqs: np.ndarray, magnitudes: np.ndarray,
                      min_freq: float = 27.5, max_freq: float = 4186.0
                      ) -> tuple[float, float]:
-   
-    mask = (freqs >= min_freq) & (freqs <= max_freq)
-    r_freqs = freqs[mask]
-    r_mags = magnitudes[mask]
 
-    if len(r_mags) == 0:
+    # HPS on full spectrum (indices must start at 0 for correct harmonic alignment)
+    hps = magnitudes.copy()
+    num_harmonics = 2
+    for h in range(2, num_harmonics + 1):
+        downsampled = magnitudes[::h]
+        min_len = min(len(hps), len(downsampled))
+        hps[:min_len] *= downsampled[:min_len]
+        hps[min_len:] = 0
+
+    # NOW restrict search to piano range
+    mask = (freqs >= min_freq) & (freqs <= max_freq / num_harmonics)
+    if not np.any(mask):
         return 0.0, 0.0
 
- 
-    hps = r_mags.copy()
-    num_harmonics = 5
-    for h in range(2, num_harmonics + 1):
-        #every h element downsample
-        #compression
-        downsampled = r_mags[::h]
-        min_len = min(len(hps), len(downsampled))
-        #multiplication
-        hps[:min_len] *= downsampled[:min_len]
-        hps[min_len:] = 0  
+    hps_masked = hps.copy()
+    hps_masked[~mask] = 0
 
-    idx = np.argmax(hps)
-    fund_freq = float(r_freqs[idx])
-    fund_mag = float(r_mags[idx])
-
-    return fund_freq, fund_mag
+    
+    idx = np.argmax(hps_masked)
+    return float(freqs[idx]), float(magnitudes[idx])
 
 
 def freq_to_piano_key(freq: float) -> dict:
